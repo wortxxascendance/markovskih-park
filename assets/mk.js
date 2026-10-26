@@ -3,7 +3,8 @@
   const WA = '79291616516', TEL = '+79291616516', TEL_H = '+7 929 161-65-16', MAIL = 'markovka130974@gmail.com';
   const GIS = 'https://2gis.ru/kaliningrad/firm/70000001056691697';
   // цены из прайса в 2ГИС, за сутки; у беседок цена в прайсе своя для каждой
-  const STAY = [['Коттедж «Панорама»', 25000], ['Половина дома «Лесной дуэт»', 17000], ['«Лесной дуэт» целиком', 30000], ['Дом с камином', 35000], ['Беседка на день', 0], ['Авторский тур «всё включено»', 0]];
+  // [название, будни или от 3 суток, выходные (ночь пт и сб)]
+  const STAY = [['Коттедж «Панорама»', 25000, 28000], ['Половина дома «Лесной дуэт»', 16000, 18000], ['«Лесной дуэт» целиком', 30000, 30000], ['Беседка на день', 0, 0], ['Авторский тур «всё включено»', 0, 0]];
   const EXTRA = ['Рыбалка', 'Посуда в беседку (1 500 ₽)', 'Сапы, лодки, катамараны', 'Квадроциклы', 'Приедем с питомцем', 'Нужен трансфер'];
   const I = {
     logo: '<svg viewBox="0 0 48 48" fill="none"><rect width="48" height="48" rx="13" fill="#d9a441"/><path d="M10 24 24 12l14 12M14 22v10h20V22" stroke="#10231f" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M7 38c4-3 8 3 12 0s8 3 12 0 8 3 10 0" stroke="#10231f" stroke-width="2.6" stroke-linecap="round"/></svg>',
@@ -44,7 +45,7 @@
   <span class="eb">Бронь</span><h3 id="bk-t">Проверим, <em>свободны ли даты</em></h3>
   <p style="color:var(--mut);margin-top:10px">Заявка уйдёт администратору усадьбы в WhatsApp — вам ответят, свободны ли даты, и назовут точную цену.</p>
   <form class="fm" id="bk" novalidate>
-    <div class="lb2">Что забронировать<div class="chips" id="bk-s">${STAY.map(([t, p]) => `<button type="button" aria-pressed="false" data-p="${p}">${t}</button>`).join('')}</div></div>
+    <div class="lb2">Что забронировать<div class="chips" id="bk-s">${STAY.map(([t, p, w]) => `<button type="button" aria-pressed="false" data-p="${p}" data-w="${w}">${t}</button>`).join('')}</div></div>
     <div class="two"><label for="bk-in">Заезд<input class="inp" id="bk-in" type="date"></label><label for="bk-out">Выезд<input class="inp" id="bk-out" type="date"></label></div>
     <div class="two"><label for="bk-a">Взрослых<input class="inp" id="bk-a" type="number" min="1" max="30" inputmode="numeric" placeholder="2"></label><label for="bk-k">Детей<input class="inp" id="bk-k" type="number" min="0" max="20" inputmode="numeric" placeholder="0"></label></div>
     <div class="lb2">Дополнительно<div class="chips" id="bk-x">${EXTRA.map(t => `<button type="button" aria-pressed="false">${t}</button>`).join('')}</div></div>
@@ -74,7 +75,10 @@
     const s = $$('#bk-s button[aria-pressed=true]'), n = nights(), e = $('#bk-e');
     if ($('#bk-in').value) $('#bk-out').min = $('#bk-in').value;
     if (s.length !== 1 || n < 1 || !+s[0].dataset.p) { e.classList.remove('on'); return }
-    e.innerHTML = `${n} ${plural(n)} · по прайсу <b>${rub(n * +s[0].dataset.p)}</b>. Точную цену на ваши даты подтвердит администратор.`;
+    const d0 = new Date($('#bk-in').value);
+    let sum = 0;
+    for (let i = 0; i < n; i++) { const wd = new Date(d0.getTime() + i * 864e5).getDay(); sum += n < 3 && (wd === 5 || wd === 6) ? +s[0].dataset.w : +s[0].dataset.p }
+    e.innerHTML = `${n} ${plural(n)} · по прайсу <b>${rub(sum)}</b>. Точную цену на ваши даты подтвердит администратор.`;
     e.classList.add('on');
   };
   ['#bk-in', '#bk-out'].forEach(id => $(id).addEventListener('change', estimate));
